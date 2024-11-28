@@ -115,7 +115,6 @@ def show_lesson(lesson_title):
 
                 # Knop om terug te keren naar het dashboard
                 if st.button("Terug naar Dashboard"):
-                    # st.session_state[f'quiz_submitted_{lesson_title}'] = False  # Als je wilt toestaan dat de quiz opnieuw wordt gemaakt
                     st.session_state.page = 'dashboard'
             else:
                 if st.button("Terug naar Dashboard"):
@@ -162,22 +161,36 @@ def main():
         col2.metric("Badges", f"{st.session_state.badges}")
         col3.metric("Ranglijstpositie", f"{st.session_state.leaderboard_position}e")
 
-        # Lessenoverzicht
-        st.header("Beschikbare Lessen")
-        for lesson in lessons:
-            lesson_title = lesson['title']
-            with st.expander(f"{lesson_title} ({lesson['duration']} min)"):
-                st.write(lesson["content"])
+        # Verdeel lessen in beschikbaar en voltooid
+        available_lessons = [lesson for lesson in lessons if lesson['title'] not in st.session_state.completed_lessons]
+        completed_lessons = [lesson for lesson in lessons if lesson['title'] in st.session_state.completed_lessons]
 
-                # Controleer of de les voltooid is
-                if lesson_title in st.session_state.completed_lessons:
-                    correct_answers = st.session_state.completed_lessons[lesson_title]
-                    total_questions = 3  # Aantal vragen in de quiz (pas aan indien nodig)
-                    checkmark = get_checkmark_icon()
-                    st.write(f"{checkmark} Voltooid ({correct_answers}/{total_questions} correct)")
-                else:
+        # Beschikbare Lessen
+        if available_lessons:
+            st.header("Beschikbare Lessen")
+            for lesson in available_lessons:
+                lesson_title = lesson['title']
+                with st.expander(f"{lesson_title} ({lesson['duration']} min)"):
+                    st.write(lesson["content"])
                     if st.button(f"Start {lesson_title}", key=f"start_{lesson_title}"):
                         st.session_state.page = lesson_title
+        else:
+            st.header("Geen Beschikbare Lessen")
+            st.write("Je hebt alle lessen voltooid. Goed gedaan!")
+
+        # Voltooide Lessen
+        if completed_lessons:
+            st.header("Voltooide Lessen")
+            for lesson in completed_lessons:
+                lesson_title = lesson['title']
+                correct_answers = st.session_state.completed_lessons[lesson_title]
+                total_questions = 3  # Aantal vragen in de quiz (pas aan indien nodig)
+                checkmark = get_checkmark_icon()
+                with st.expander(f"{lesson_title} {checkmark}"):
+                    st.write(f"Je hebt deze les voltooid met {correct_answers}/{total_questions} correct beantwoorde vragen.")
+        else:
+            st.header("Voltooide Lessen")
+            st.write("Je hebt nog geen lessen voltooid.")
 
     # Lespagina's
     elif st.session_state.page in [lesson['title'] for lesson in lessons]:
