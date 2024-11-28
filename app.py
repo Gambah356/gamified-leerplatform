@@ -2,27 +2,30 @@
 
 import streamlit as st
 
-# Step 1: Initialize st.session_state
+# Stap 1: Initialiseer st.session_state
 if 'page' not in st.session_state:
-    st.session_state.page = 'login'  # Start with the login page
+    st.session_state.page = 'login'  # Start met de login pagina
 
 if 'points' not in st.session_state:
-    st.session_state.points = 150  # Starting points
+    st.session_state.points = 150  # Startpunten
 
 if 'leaderboard_position' not in st.session_state:
-    st.session_state.leaderboard_position = 5  # Starting leaderboard position
+    st.session_state.leaderboard_position = 5  # Startpositie op de ranglijst
 
 if 'badges' not in st.session_state:
-    st.session_state.badges = 3  # Starting number of badges
+    st.session_state.badges = 3  # Startaantal badges
 
-# Step 2: Define lessons
+if 'show_confetti' not in st.session_state:
+    st.session_state.show_confetti = False  # Vlag voor confetti-effect
+
+# Stap 2: Definieer de lessen
 lessons = [
     {"title": "Introductie tot Bedrijfsprocessen", "duration": 5, "content": "Leer over onze bedrijfsprocessen."},
     {"title": "Klantinteractie 101", "duration": 5, "content": "Verbeter je klantinteractie vaardigheden."},
     {"title": "Productkennis Basics", "duration": 5, "content": "Verdiep je in onze producten."},
 ]
 
-# Step 3: Define the show_lesson function with multiple choice questions
+# Stap 3: Definieer de show_lesson functie met meerdere meerkeuzevragen
 def show_lesson(lesson_title):
     st.title(lesson_title)
     if lesson_title == "Klantinteractie 101":
@@ -33,10 +36,10 @@ def show_lesson(lesson_title):
             Het is belangrijk om elke klant het gevoel te geven dat ze speciaal zijn en dat we er alles aan doen om hun ervaring uitzonderlijk te maken.
         """)
 
-        # Multiple-choice questions
+        # Meerkeuzevragen
         st.subheader("Quiz")
 
-        # List of questions with options and correct answers
+        # Lijst van vragen met opties en juiste antwoorden
         quiz_questions = [
             {
                 "question": "Wat is het belangrijkste aspect van onze klantinteractie?",
@@ -58,20 +61,20 @@ def show_lesson(lesson_title):
         user_answers = []
         correct_count = 0
 
-        # Loop through each question and display it to the user
+        # Loop door elke vraag en toon deze aan de gebruiker
         for idx, q in enumerate(quiz_questions):
             st.write(f"**Vraag {idx + 1}: {q['question']}**")
             user_choice = st.radio("", q['options'], key=f"question_{idx}")
             user_answers.append({"question": q['question'], "user_choice": user_choice, "correct_answer": q['answer']})
             st.write("---")
 
-        # Check if the user has already completed the quiz
+        # Controleer of de gebruiker de quiz al heeft ingediend
         if 'quiz_submitted' not in st.session_state:
             st.session_state.quiz_submitted = False
 
         if not st.session_state.quiz_submitted:
             if st.button("Verstuur Antwoorden"):
-                st.session_state.quiz_submitted = True  # Mark quiz as submitted
+                st.session_state.quiz_submitted = True  # Markeer quiz als ingediend
                 for idx, ua in enumerate(user_answers):
                     if ua['user_choice'] == ua['correct_answer']:
                         st.success(f"Vraag {idx + 1}: Correct!")
@@ -80,26 +83,29 @@ def show_lesson(lesson_title):
                         st.error(f"Vraag {idx + 1}: Onjuist. Het juiste antwoord is: {ua['correct_answer']}")
                 st.write(f"Je hebt {correct_count} van de {len(quiz_questions)} vragen correct beantwoord.")
 
-                # Add points based on correct answers
-                points_earned = correct_count * 10  # For example, 10 points per correct answer
+                # Voeg punten toe op basis van correcte antwoorden
+                points_earned = correct_count * 10  # Bijvoorbeeld 10 punten per correct antwoord
                 st.session_state.points += points_earned
 
                 st.write(f"Je hebt {points_earned} punten verdiend!")
                 st.write(f"Totaal aantal punten: {st.session_state.points}")
 
-                # Update leaderboard position (simplified logic)
+                # Update ranglijstpositie (vereenvoudigde logica)
+                previous_position = st.session_state.leaderboard_position  # Bewaar vorige positie
                 if correct_count >= 2 and st.session_state.leaderboard_position > 1:
                     st.session_state.leaderboard_position -= 1
                     st.write(f"Gefeliciteerd! Je ranglijstpositie is verbeterd naar {st.session_state.leaderboard_position}e plaats.")
+                    # Stel de confetti-vlag in
+                    st.session_state.show_confetti = True
 
-                # Award badge if all answers are correct
+                # Verleen badge als alle antwoorden correct zijn
                 if correct_count == len(quiz_questions):
                     st.session_state.badges += 1
                     st.write("Je hebt een nieuwe badge verdiend!")
 
-                # Button to return to dashboard
+                # Knop om terug te keren naar het dashboard
                 if st.button("Terug naar Dashboard"):
-                    # Reset quiz state
+                    # Reset quizstatus
                     st.session_state.quiz_submitted = False
                     st.session_state.page = 'dashboard'
             else:
@@ -108,7 +114,7 @@ def show_lesson(lesson_title):
         else:
             st.write("Je hebt deze quiz al voltooid.")
             if st.button("Terug naar Dashboard"):
-                # Reset quiz state
+                # Reset quizstatus
                 st.session_state.quiz_submitted = False
                 st.session_state.page = 'dashboard'
 
@@ -117,34 +123,39 @@ def show_lesson(lesson_title):
         if st.button("Terug naar Dashboard"):
             st.session_state.page = 'dashboard'
 
-# Step 4: Main function of the app
+# Stap 4: Hoofdfunctie van de app
 def main():
-    # Login page
+    # Inlogpagina
     if st.session_state.page == 'login':
         st.title("Gamified Leerplatform")
         st.write("Welkom bij het Gamified Leerplatform! Log in om te beginnen.")
 
-        # Login section
+        # Inloggedeelte
         username = st.text_input("Gebruikersnaam")
         password = st.text_input("Wachtwoord", type='password')
 
         if st.button("Login"):
-            # Simple authentication logic (for demonstration)
+            # Eenvoudige authenticatie logica (voor demonstratie)
             if username == "gebruiker" and password == "wachtwoord":
                 st.success(f"Welkom, {username}!")
                 st.session_state.page = 'dashboard'
             else:
                 st.error("Onjuiste gebruikersnaam of wachtwoord.")
 
-    # Dashboard page
+    # Dashboardpagina
     elif st.session_state.page == 'dashboard':
+        # Controleer of we confetti moeten tonen
+        if st.session_state.show_confetti:
+            st.balloons()
+            st.session_state.show_confetti = False  # Reset de confetti-vlag
+
         st.header("Jouw Voortgang")
         col1, col2, col3 = st.columns(3)
         col1.metric("Punten", f"{st.session_state.points}")
         col2.metric("Badges", f"{st.session_state.badges}")
         col3.metric("Ranglijstpositie", f"{st.session_state.leaderboard_position}e")
 
-        # Lessons overview
+        # Lessenoverzicht
         st.header("Beschikbare Lessen")
         for lesson in lessons:
             with st.expander(f"{lesson['title']} ({lesson['duration']} min)"):
@@ -152,14 +163,14 @@ def main():
                 if st.button(f"Start {lesson['title']}", key=f"start_{lesson['title']}"):
                     st.session_state.page = lesson['title']
 
-    # Lesson pages
+    # Lespagina's
     elif st.session_state.page in [lesson['title'] for lesson in lessons]:
         show_lesson(st.session_state.page)
 
     else:
-        # Unknown page, return to dashboard
+        # Onbekende pagina, terug naar dashboard
         st.session_state.page = 'dashboard'
 
-# Step 5: Run the app
+# Stap 5: Voer de app uit
 if __name__ == "__main__":
     main()
