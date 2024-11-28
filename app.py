@@ -15,6 +15,9 @@ if 'leaderboard_position' not in st.session_state:
 if 'badges' not in st.session_state:
     st.session_state.badges = 3  # Startaantal badges
 
+if 'completed_lessons' not in st.session_state:
+    st.session_state.completed_lessons = {}  # Houdt bij welke lessen voltooid zijn
+
 if 'show_confetti' not in st.session_state:
     st.session_state.show_confetti = False  # Vlag voor confetti-effect
 
@@ -24,6 +27,10 @@ lessons = [
     {"title": "Klantinteractie 101", "duration": 5, "content": "Verbeter je klantinteractie vaardigheden."},
     {"title": "Productkennis Basics", "duration": 5, "content": "Verdiep je in onze producten."},
 ]
+
+# Functie om een groen vinkje weer te geven
+def get_checkmark_icon():
+    return "✅"
 
 # Stap 3: Definieer de show_lesson functie met meerdere meerkeuzevragen
 def show_lesson(lesson_title):
@@ -64,17 +71,17 @@ def show_lesson(lesson_title):
         # Loop door elke vraag en toon deze aan de gebruiker
         for idx, q in enumerate(quiz_questions):
             st.write(f"**Vraag {idx + 1}: {q['question']}**")
-            user_choice = st.radio("", q['options'], key=f"question_{idx}")
+            user_choice = st.radio("", q['options'], key=f"question_{lesson_title}_{idx}")
             user_answers.append({"question": q['question'], "user_choice": user_choice, "correct_answer": q['answer']})
             st.write("---")
 
         # Controleer of de gebruiker de quiz al heeft ingediend
-        if 'quiz_submitted' not in st.session_state:
-            st.session_state.quiz_submitted = False
+        if f'quiz_submitted_{lesson_title}' not in st.session_state:
+            st.session_state[f'quiz_submitted_{lesson_title}'] = False
 
-        if not st.session_state.quiz_submitted:
+        if not st.session_state[f'quiz_submitted_{lesson_title}']:
             if st.button("Verstuur Antwoorden"):
-                st.session_state.quiz_submitted = True  # Markeer quiz als ingediend
+                st.session_state[f'quiz_submitted_{lesson_title}'] = True  # Markeer quiz als ingediend
                 for idx, ua in enumerate(user_answers):
                     if ua['user_choice'] == ua['correct_answer']:
                         st.success(f"Vraag {idx + 1}: Correct!")
@@ -103,10 +110,12 @@ def show_lesson(lesson_title):
                     st.session_state.badges += 1
                     st.write("Je hebt een nieuwe badge verdiend!")
 
+                # Markeer de les als voltooid en sla het aantal correcte antwoorden op
+                st.session_state.completed_lessons[lesson_title] = correct_count
+
                 # Knop om terug te keren naar het dashboard
                 if st.button("Terug naar Dashboard"):
-                    # Reset quizstatus
-                    st.session_state.quiz_submitted = False
+                    # st.session_state[f'quiz_submitted_{lesson_title}'] = False  # Als je wilt toestaan dat de quiz opnieuw wordt gemaakt
                     st.session_state.page = 'dashboard'
             else:
                 if st.button("Terug naar Dashboard"):
@@ -114,8 +123,6 @@ def show_lesson(lesson_title):
         else:
             st.write("Je hebt deze quiz al voltooid.")
             if st.button("Terug naar Dashboard"):
-                # Reset quizstatus
-                st.session_state.quiz_submitted = False
                 st.session_state.page = 'dashboard'
 
     else:
@@ -146,7 +153,7 @@ def main():
     elif st.session_state.page == 'dashboard':
         # Controleer of we confetti moeten tonen
         if st.session_state.show_confetti:
-            st.balloons()
+            st.success("Gefeliciteerd met je verbeterde ranglijstpositie!")
             st.session_state.show_confetti = False  # Reset de confetti-vlag
 
         st.header("Jouw Voortgang")
@@ -158,10 +165,19 @@ def main():
         # Lessenoverzicht
         st.header("Beschikbare Lessen")
         for lesson in lessons:
-            with st.expander(f"{lesson['title']} ({lesson['duration']} min)"):
+            lesson_title = lesson['title']
+            with st.expander(f"{lesson_title} ({lesson['duration']} min)"):
                 st.write(lesson["content"])
-                if st.button(f"Start {lesson['title']}", key=f"start_{lesson['title']}"):
-                    st.session_state.page = lesson['title']
+
+                # Controleer of de les voltooid is
+                if lesson_title in st.session_state.completed_lessons:
+                    correct_answers = st.session_state.completed_lessons[lesson_title]
+                    total_questions = 3  # Aantal vragen in de quiz (pas aan indien nodig)
+                    checkmark = get_checkmark_icon()
+                    st.write(f"{checkmark} Voltooid ({correct_answers}/{total_questions} correct)")
+                else:
+                    if st.button(f"Start {lesson_title}", key=f"start_{lesson_title}"):
+                        st.session_state.page = lesson_title
 
     # Lespagina's
     elif st.session_state.page in [lesson['title'] for lesson in lessons]:
