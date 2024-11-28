@@ -3,7 +3,7 @@
 import streamlit as st
 
 # Titel en introductie
-st.title("Gamified Leerplatform")
+st.title("Loogman Leerplatform")
 st.write("Welkom bij het Gamified Leerplatform! Log in om te beginnen.")
 
 # Inloggedeelte
@@ -12,7 +12,7 @@ password = st.text_input("Wachtwoord", type='password')
 
 if st.button("Login"):
     # Authenticatie logica (vereenvoudigd voor deze demo)
-    if username == "gebruiker" and password == "wachtwoord":
+    if username == "Jeroen" and password == "1234":
         st.success(f"Welkom, {username}!")
         
         # Gamificatie-elementen
