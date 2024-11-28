@@ -116,18 +116,22 @@ def show_lesson(lesson_title):
                 # Knop om terug te keren naar het dashboard
                 if st.button("Terug naar Dashboard"):
                     st.session_state.page = 'dashboard'
+                    st.experimental_rerun()
             else:
                 if st.button("Terug naar Dashboard"):
                     st.session_state.page = 'dashboard'
+                    st.experimental_rerun()
         else:
             st.write("Je hebt deze quiz al voltooid.")
             if st.button("Terug naar Dashboard"):
                 st.session_state.page = 'dashboard'
+                st.experimental_rerun()
 
     else:
         st.write("Lesinhoud voor deze les is nog niet beschikbaar.")
         if st.button("Terug naar Dashboard"):
             st.session_state.page = 'dashboard'
+            st.experimental_rerun()
 
 # Stap 4: Hoofdfunctie van de app
 def main():
@@ -145,6 +149,7 @@ def main():
             if username == "gebruiker" and password == "wachtwoord":
                 st.success(f"Welkom, {username}!")
                 st.session_state.page = 'dashboard'
+                st.experimental_rerun()
             else:
                 st.error("Onjuiste gebruikersnaam of wachtwoord.")
 
@@ -174,6 +179,7 @@ def main():
                     st.write(lesson["content"])
                     if st.button(f"Start {lesson_title}", key=f"start_{lesson_title}"):
                         st.session_state.page = lesson_title
+                        st.experimental_rerun()
         else:
             st.header("Geen Beschikbare Lessen")
             st.write("Je hebt alle lessen voltooid. Goed gedaan!")
@@ -199,6 +205,7 @@ def main():
     else:
         # Onbekende pagina, terug naar dashboard
         st.session_state.page = 'dashboard'
+        st.experimental_rerun()
 
 # Stap 5: Voer de app uit
 if __name__ == "__main__":
