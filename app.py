@@ -87,53 +87,64 @@ def submit_quiz(lesson_title, quiz_questions):
     # Markeer de les als voltooid en sla het aantal correcte antwoorden op
     st.session_state.completed_lessons[lesson_title] = correct_count
 
+    # Wis quizgerelateerde gegevens uit st.session_state
+    for idx in range(len(quiz_questions)):
+        key = f"question_{lesson_title}_{idx}"
+        if key in st.session_state:
+            del st.session_state[key]
+
     # Ga terug naar het dashboard
     st.session_state.page = 'dashboard'
 
 def show_lesson(lesson_title):
     st.title(lesson_title)
-    if lesson_title == "Klantinteractie 101":
-        st.header("Missie")
-        st.write("**Wij maken het verschil, iedere wasbeurt weer!**")
-        st.write("""
-            In deze les leer je hoe je onze missie kunt uitdragen in elke interactie met de klant.
-            Het is belangrijk om elke klant het gevoel te geven dat ze speciaal zijn en dat we er alles aan doen om hun ervaring uitzonderlijk te maken.
-        """)
 
-        # Meerkeuzevragen
-        st.subheader("Quiz")
-
-        # Lijst van vragen met opties en juiste antwoorden
-        quiz_questions = [
-            {
-                "question": "Wat is het belangrijkste aspect van onze klantinteractie?",
-                "options": ["A) Snelheid", "B) Vriendelijkheid", "C) Kosten", "D) Efficiëntie"],
-                "answer": "B) Vriendelijkheid"
-            },
-            {
-                "question": "Hoe kunnen we het verschil maken tijdens elke wasbeurt?",
-                "options": ["A) Door extra diensten aan te bieden", "B) Door hogere prijzen te vragen", "C) Door persoonlijke aandacht te geven", "D) Door snelle service te leveren"],
-                "answer": "C) Door persoonlijke aandacht te geven"
-            },
-            {
-                "question": "Wat betekent onze missie voor jouw dagelijkse werk?",
-                "options": ["A) Niets, het is slechts een slogan", "B) Ik moet altijd op tijd zijn", "C) Ik moet elke klant een unieke ervaring bieden", "D) Ik moet zoveel mogelijk auto's wassen"],
-                "answer": "C) Ik moet elke klant een unieke ervaring bieden"
-            }
-        ]
-
-        # Loop door elke vraag en toon deze aan de gebruiker
-        for idx, q in enumerate(quiz_questions):
-            st.write(f"**Vraag {idx + 1}: {q['question']}**")
-            st.radio("", q['options'], key=f"question_{lesson_title}_{idx}")
-            st.write("---")
-
-        st.button("Verstuur Antwoorden", on_click=submit_quiz, args=(lesson_title, quiz_questions))
+    # Controleer of de les voltooid is
+    if lesson_title in st.session_state.completed_lessons:
+        st.write("Je hebt deze les al voltooid.")
         st.button("Terug naar Dashboard", on_click=go_to_page, args=('dashboard',))
-
     else:
-        st.write("Lesinhoud voor deze les is nog niet beschikbaar.")
-        st.button("Terug naar Dashboard", on_click=go_to_page, args=('dashboard',))
+        if lesson_title == "Klantinteractie 101":
+            st.header("Missie")
+            st.write("**Wij maken het verschil, iedere wasbeurt weer!**")
+            st.write("""
+                In deze les leer je hoe je onze missie kunt uitdragen in elke interactie met de klant.
+                Het is belangrijk om elke klant het gevoel te geven dat ze speciaal zijn en dat we er alles aan doen om hun ervaring uitzonderlijk te maken.
+            """)
+
+            # Meerkeuzevragen
+            st.subheader("Quiz")
+
+            # Lijst van vragen met opties en juiste antwoorden
+            quiz_questions = [
+                {
+                    "question": "Wat is het belangrijkste aspect van onze klantinteractie?",
+                    "options": ["A) Snelheid", "B) Vriendelijkheid", "C) Kosten", "D) Efficiëntie"],
+                    "answer": "B) Vriendelijkheid"
+                },
+                {
+                    "question": "Hoe kunnen we het verschil maken tijdens elke wasbeurt?",
+                    "options": ["A) Door extra diensten aan te bieden", "B) Door hogere prijzen te vragen", "C) Door persoonlijke aandacht te geven", "D) Door snelle service te leveren"],
+                    "answer": "C) Door persoonlijke aandacht te geven"
+                },
+                {
+                    "question": "Wat betekent onze missie voor jouw dagelijkse werk?",
+                    "options": ["A) Niets, het is slechts een slogan", "B) Ik moet altijd op tijd zijn", "C) Ik moet elke klant een unieke ervaring bieden", "D) Ik moet zoveel mogelijk auto's wassen"],
+                    "answer": "C) Ik moet elke klant een unieke ervaring bieden"
+                }
+            ]
+
+            # Loop door elke vraag en toon deze aan de gebruiker
+            for idx, q in enumerate(quiz_questions):
+                st.write(f"**Vraag {idx + 1}: {q['question']}**")
+                st.radio("", q['options'], key=f"question_{lesson_title}_{idx}")
+                st.write("---")
+
+            st.button("Verstuur Antwoorden", on_click=submit_quiz, args=(lesson_title, quiz_questions))
+            st.button("Terug naar Dashboard", on_click=go_to_page, args=('dashboard',))
+        else:
+            st.write("Lesinhoud voor deze les is nog niet beschikbaar.")
+            st.button("Terug naar Dashboard", on_click=go_to_page, args=('dashboard',))
 
 # Stap 4: Hoofdfunctie van de app
 def main():
@@ -150,7 +161,7 @@ def main():
     elif st.session_state.page == 'dashboard':
         # Controleer of we confetti moeten tonen
         if st.session_state.show_confetti:
-            st.success("Gefeliciteerd met je verbeterde ranglijstpositie!")
+            st.balloons()
             st.session_state.show_confetti = False  # Reset de confetti-vlag
 
         st.header("Jouw Voortgang")
